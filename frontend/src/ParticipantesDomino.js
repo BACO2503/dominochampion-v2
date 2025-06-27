@@ -16,7 +16,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
   const fetchMesasDesdeAPI = useCallback(async (fase) => {
     try {
       const res = await fetch(
-        `http://localhost:3001/api/torneo/partidas?fase=${fase}`
+        `https://dominochampion-v2.onrender.com/api/torneo/partidas?fase=${fase}`
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al cargar mesas");
