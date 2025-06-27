@@ -58,7 +58,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
   const registrarGanador = (idMesa, idParticipante) => {
     setGanadores((prev) => ({ ...prev, [idMesa]: idParticipante }));
     fetch(
-      `http://localhost:3001/api/torneo/ganador/${idMesa}?fase=${currentPhase}`,
+      `https://dominochampion-v2.onrender.com/api/torneo/ganador/${idMesa}?fase=${currentPhase}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
