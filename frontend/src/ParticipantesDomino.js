@@ -160,6 +160,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
         puntos: rondas[currentRound] || 0
       };
     });
+    // Se supone que el error es este
     try {
       const res = await fetch("https://dominochampion-v2.onrender.com/api/torneo/final/ronda", {
         method: "POST",
