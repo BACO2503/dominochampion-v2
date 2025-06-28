@@ -46,7 +46,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
 
   const fetchMesas = useCallback(async (fase) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/torneo/partidas?fase=${fase}`);
+      const res = await fetch(`https://dominochampion-v2.onrender.com/api/torneo/partidas?fase=${fase}`);
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const { partidas } = await res.json();
       setMesas(partidas || []);
@@ -107,7 +107,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
     });
 
     try {
-      const res = await fetch("http://localhost:3001/api/torneo/final/cerrar", {
+      const res = await fetch("https://dominochampion-v2.onrender.com/api/torneo/final/cerrar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ronda: currentRound, puntos: puntosActuales })
@@ -135,7 +135,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
 
   const confirmarYRegistrar = (mesaId, player) => {
     if (window.confirm(`¿Ganador Mesa ${mesaId}? ${player.nombre} (ID: ${player.idParticipante})?`)) {
-      fetch(`http://localhost:3001/api/torneo/ganador/${mesaId}?fase=${currentPhase}`, {
+      fetch(`https://dominochampion-v2.onrender.com/api/torneo/ganador/${mesaId}?fase=${currentPhase}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idParticipanteGanador: player.idParticipante })

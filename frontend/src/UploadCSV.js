@@ -21,7 +21,7 @@ export default function UploadParticipantes() {
     formData.append("archivo", archivo);
 
     try {
-      const res = await fetch("http://localhost:3001/api/participantes/upload", {
+      const res = await fetch("https://dominochampion-v2.onrender.com/api/participantes/upload", {
         method: "POST",
         body: formData
       });
