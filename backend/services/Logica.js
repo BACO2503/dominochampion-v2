@@ -11,7 +11,19 @@ async function formarPartidas(nombreArchivo = 'participantes.csv') {
     fs.createReadStream(filePath)
       .pipe(csv())
       .on('data', (row) => {
-        participantes.push(row);
+        // Mapea los campos, compatible con ambos tipos de archivo:
+        let id =
+          (row['Número de expediente'] && /^\d+$/.test(row['Número de expediente']))
+            ? row['Número de expediente']
+            : row['idParticipante'] || '--';
+        let nombre = row['NOMBRE'] || row['nombre'] || '';
+        // Solo agrega si hay nombre e id
+        if (id && nombre) {
+          participantes.push({
+            idParticipante: id,
+            nombre: nombre
+          });
+        }
       })
       .on('end', () => {
         // Mezclar aleatoriamente
@@ -19,7 +31,6 @@ async function formarPartidas(nombreArchivo = 'participantes.csv') {
           const j = Math.floor(Math.random() * (i + 1));
           [participantes[i], participantes[j]] = [participantes[j], participantes[i]];
         }
-
         // Agrupar en partidas de 4
         const partidas = [];
         let numeroPartida = 1;
@@ -29,76 +40,20 @@ async function formarPartidas(nombreArchivo = 'participantes.csv') {
           const grupo = participantes.slice(i, i + 4);
           partidas.push({
             partida: numeroPartida++,
-            jugadores: grupo.map(p => ({
-               idParticipante: p.idParticipante,
-                ap_p: p.ap_p,
-                ap_m: p.ap_m,
-                nombre: p.nombre
-            }))
+            jugadores: grupo
           });
           i += 4;
         }
 
+        // Casos para 1, 2, o 3 participantes restantes
         const restantes = participantes.length - i;
-
-if (restantes === 1) {
-  // Tomamos 2 jugadores de una partida de 4 para formar una de 3 con el sobrante
-  const partidaAjustada = partidas.find(p => p.jugadores.length === 4);
-  if (partidaAjustada) {
-    // Extraemos 2 jugadores
-    const extraidos = partidaAjustada.jugadores.splice(0, 2);
-    // Creamos la partida de 3 (2 extraídos + el sobrante)
-    partidas.push({
-      partida: numeroPartida++,
-      jugadores: [
-        ...extraidos,
-        {
-          idParticipante: participantes[i].idParticipante,
-          ap_p: participantes[i].ap_p,
-          ap_m: participantes[i].ap_m,
-          nombre: participantes[i].nombre
+        if (restantes > 0) {
+          const grupo = participantes.slice(i, i + restantes);
+          partidas.push({
+            partida: numeroPartida++,
+            jugadores: grupo
+          });
         }
-      ]
-    });
-  } else {
-    // Como último recurso, partida de 1 (solo debe pasar si hay 1 participante total)
-    partidas.push({
-      partida: numeroPartida++,
-      jugadores: [{
-        idParticipante: participantes[i].idParticipante,
-          ap_p: participantes[i].ap_p,
-          ap_m: participantes[i].ap_m,
-          nombre: participantes[i].nombre
-      }]
-    });
-  }
-} else if (restantes === 2) {
-  // Formamos una partida de 2
-  const grupo = participantes.slice(i, i + 2);
-  partidas.push({
-    partida: numeroPartida++,
-    jugadores: grupo.map(p => ({
-      idParticipante: p.idParticipante,
-      ap_p: p.ap_p,
-      ap_m: p.ap_m,
-      nombre: p.nombre
-    }))
-  });
-} else if (restantes === 3) {
-  // Formamos una partida de 3
-  const grupo = participantes.slice(i, i + 3);
-  partidas.push({
-    partida: numeroPartida++,
-    jugadores: grupo.map(p => ({
-      idParticipante: p.idParticipante,
-      ap_p: p.ap_p,
-      ap_m: p.ap_m,
-      nombre: p.nombre
-    }))
-
-  });
-}
-
 
         resolve(partidas);
       })
@@ -107,6 +62,8 @@ if (restantes === 1) {
       });
   });
 }
+
+
 
 module.exports = {
   formarPartidas

@@ -21,33 +21,28 @@ function leerPartidasDeJSON(fase) {
 
 function guardarGanadorEnCSV(ganador, fase = 1) {
   const archivo = path.join(__dirname, `../data/ganadores_fase${fase}.csv`);
-  const encabezado = 'idParticipante,ap_p,ap_m,nombre,grupo\n';
+  const encabezado = 'idParticipante,nombre,grupo\n';
   let ganadores = [];
 
-  // Si existe el archivo, lo leemos y eliminamos al que tenga el mismo grupo
   if (fs.existsSync(archivo)) {
     const contenido = fs.readFileSync(archivo, 'utf-8').split('\n').filter(line => line.trim() !== '');
-    // Quita encabezado y el ganador del mismo grupo
     ganadores = contenido
       .slice(1)
       .map(l => l.split(','))
-      .filter(arr => arr.length >= 5 && arr[4] !== String(ganador.grupo));
+      .filter(arr => arr.length >= 3 && arr[2] !== String(ganador.grupo));
   }
 
-  // Agregamos el nuevo ganador
   ganadores.push([
     ganador.idParticipante,
-    ganador.ap_p || '',
-    ganador.ap_m || '',
     ganador.nombre,
     ganador.grupo
   ]);
 
-  // Armamos el CSV nuevamente
   const filas = ganadores.map(arr => arr.join(','));
   const csvCompleto = [encabezado.trim(), ...filas].join('\n') + '\n';
   fs.writeFileSync(archivo, csvCompleto, 'utf-8');
 }
+
 
 function obtenerAcumuladoFinal() {
   const archivo = path.join(__dirname, '../data/final.json');
