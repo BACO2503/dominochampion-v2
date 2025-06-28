@@ -6,8 +6,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<UploadCSV />} />
-        <Route path="/torneo" element={<ParticipantesDomino />} />
+        <Route path="/" element={<ParticipantesDomino />} />
       </Routes>
     </Router>
   );

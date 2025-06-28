@@ -15,13 +15,6 @@ export default function ParticipantesDomino({ esAdmin = true }) {
   const [points, setPoints] = useState({});
   const [torneoFinalizado, setTorneoFinalizado] = useState(false);
 
-  useEffect(() => {
-    const csvValidado = localStorage.getItem("csvValidado");
-    if (!csvValidado) {
-      navigate("/");
-    }
-  }, []);
-
 
   const mostrarNotificacion = useCallback((mensaje, tipo = "success") => {
     setNotificacion({ mensaje, tipo });
@@ -46,7 +39,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
 
   const fetchMesas = useCallback(async (fase) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/torneo/partidas?fase=${fase}`);
+      const res = await fetch(`https://dominochampion-v2.onrender.com/api/torneo/partidas?fase=${fase}`);
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const { partidas } = await res.json();
       setMesas(partidas || []);
@@ -107,7 +100,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
     });
 
     try {
-      const res = await fetch("http://localhost:3001/api/torneo/final/cerrar", {
+      const res = await fetch("https://dominochampion-v2.onrender.com/api/torneo/final/cerrar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ronda: currentRound, puntos: puntosActuales })
@@ -135,7 +128,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
 
   const confirmarYRegistrar = (mesaId, player) => {
     if (window.confirm(`¿Ganador Mesa ${mesaId}? ${player.nombre} (ID: ${player.idParticipante})?`)) {
-      fetch(`http://localhost:3001/api/torneo/ganador/${mesaId}?fase=${currentPhase}`, {
+      fetch(`https://dominochampion-v2.onrender.com/api/torneo/ganador/${mesaId}?fase=${currentPhase}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idParticipanteGanador: player.idParticipante })
@@ -161,7 +154,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
       };
     });
     try {
-      const res = await fetch("http://localhost:3001/api/torneo/final/ronda", {
+      const res = await fetch("https://dominochampion-v2.onrender.com/api/torneo/final/ronda", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ puntos: puntosActuales, ronda: currentRound })
@@ -187,7 +180,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
           <button
             onClick={async () => {
               try {
-                await fetch("http://localhost:3001/api/torneo/limpiar-datos", {
+                await fetch("https://dominochampion-v2.onrender.com/api/torneo/limpiar-datos", {
                   method: "POST"
                 });
               } catch (e) {
@@ -195,13 +188,20 @@ export default function ParticipantesDomino({ esAdmin = true }) {
                 mostrarNotificacion("Error al limpiar datos", "error");
                 return;
               }
-              localStorage.removeItem("csvValidado");
+              // Limpia todo lo que hayas guardado en localStorage del torneo
+              localStorage.removeItem("mesas");
+              localStorage.removeItem("ganadores");
+              localStorage.removeItem("points");
+              localStorage.removeItem("currentRound");
+              localStorage.removeItem("currentPhase");
+              
               window.location.reload();
             }}
             className="px-6 py-3 rounded-full bg-green-600 hover:bg-green-700 text-white font-bold shadow-md transition"
           >
             Volver a iniciar el torneo
           </button>
+
         </div>
       </div>
     );
