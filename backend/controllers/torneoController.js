@@ -184,7 +184,7 @@ exports.limpiarData = (req, res) => {
     }
 
     // Filtra todo excepto .gitkeep
-    const archivosAEliminar = files.filter(f => f !== '.gitkeep');
+    const archivosAEliminar = files.filter(f => f !== '.gitkeep' && f !== 'participantes.csv');
 
     let errores = [];
     archivosAEliminar.forEach(archivo => {

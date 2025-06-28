@@ -39,6 +39,6 @@ router.get('/final/puntos', consultarAcumuladoFinal);
 router.post('/final/ronda', registrarPuntosFinal);
 router.get('/final/podio-csv', exportarPodioFinalCSV);
 router.post('/final/cerrar', cerrarFaseFinal);
-router.post('/limpiar-data', limpiarData);
+router.post('/limpiar-datos', limpiarData);
 
 module.exports = router;
