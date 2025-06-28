@@ -46,7 +46,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
 
   const fetchMesas = useCallback(async (fase) => {
     try {
-      const res = await fetch(`https://dominochampion-v2.onrender.com/api/torneo/partidas?fase=${fase}`);
+      const res = await fetch(`http://localhost:3001/api/torneo/partidas?fase=${fase}`);
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const { partidas } = await res.json();
       setMesas(partidas || []);
@@ -107,7 +107,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
     });
 
     try {
-      const res = await fetch("https://dominochampion-v2.onrender.com/api/torneo/final/cerrar", {
+      const res = await fetch("http://localhost:3001/api/torneo/final/cerrar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ronda: currentRound, puntos: puntosActuales })
@@ -135,7 +135,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
 
   const confirmarYRegistrar = (mesaId, player) => {
     if (window.confirm(`¿Ganador Mesa ${mesaId}? ${player.nombre} (ID: ${player.idParticipante})?`)) {
-      fetch(`https://dominochampion-v2.onrender.com/api/torneo/ganador/${mesaId}?fase=${currentPhase}`, {
+      fetch(`http://localhost:3001/api/torneo/ganador/${mesaId}?fase=${currentPhase}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idParticipanteGanador: player.idParticipante })
@@ -161,7 +161,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
       };
     });
     try {
-      const res = await fetch("https://dominochampion-v2.onrender.com/api/torneo/final/ronda", {
+      const res = await fetch("http://localhost:3001/api/torneo/final/ronda", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ puntos: puntosActuales, ronda: currentRound })
@@ -187,7 +187,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
           <button
             onClick={async () => {
               try {
-                await fetch("https://dominochampion-v2.onrender.com/api/torneo/limpiar-datos", {
+                await fetch("http://localhost:3001/api/torneo/limpiar-datos", {
                   method: "POST"
                 });
               } catch (e) {
@@ -248,20 +248,19 @@ export default function ParticipantesDomino({ esAdmin = true }) {
         <h1 className="text-5xl font-bold text-center mb-8 uppercase">Participantes Dominó</h1>
 
         {esAdmin && !faseFinalActiva && (
-          <div className="flex justify-center mb-6">
+          <div className="flex flex-col items-center justify-center mb-6">
             <button
-              onClick={iniciarSiguienteFase}
-              disabled={!todosGanadoresSeleccionados}
-              className={`px-6 py-3 rounded-2xl shadow-lg font-bold uppercase hover:scale-105 transition ${isFinalPhase() ? "bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white" : "bg-gradient-to-r from-red-700 via-red-900 to-black text-white"}`}
+              onClick={() => {
+                if (!todosGanadoresSeleccionados) {
+                  mostrarNotificacion("Selecciona un ganador en cada mesa antes de continuar.", "warning");
+                } else {
+                  iniciarSiguienteFase();
+                }
+              }}
+              className={`px-6 py-3 rounded-2xl shadow-lg font-bold uppercase hover:scale-105 transition ${!todosGanadoresSeleccionados ? "bg-gray-500 cursor-not-allowed opacity-50" : isFinalPhase(mesas) ? "bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white" : "bg-gradient-to-r from-red-700 via-red-900 to-black text-white"}`}
             >
-              {isFinalPhase() ? "Iniciar Partida Final" : `Iniciar Fase ${currentPhase + 1}`}
+              {isFinalPhase(mesas) ? "Iniciar Partida Final" : `Iniciar Fase ${currentPhase + 1}`}
             </button>
-            {!todosGanadoresSeleccionados && (
-              <p className="mt-2 text-yellow-300 text-center">
-                Selecciona un ganador en cada mesa antes de continuar.
-              </p>
-            )}
-
           </div>
         )}
 
