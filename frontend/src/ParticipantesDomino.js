@@ -22,7 +22,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
     }
   }, []);
 
-  
+
   const mostrarNotificacion = useCallback((mensaje, tipo = "success") => {
     setNotificacion({ mensaje, tipo });
     setTimeout(() => setNotificacion(null), 3000);
@@ -31,6 +31,12 @@ export default function ParticipantesDomino({ esAdmin = true }) {
   const isFinalPhase = (data = mesas) => {
     const total = data.reduce((sum, m) => sum + m.jugadores.length, 0);
     return total > 0 && total <= 12;
+  };
+
+  // Función para verificar si todos los ganadores han sido seleccionados
+  const todosLosGanadoresSeleccionados = () => {
+    if (mesas.length === 0) return false;
+    return mesas.every(mesa => ganadores[mesa.partida] !== undefined);
   };
 
   const initPoints = (data) => {
@@ -63,6 +69,12 @@ export default function ParticipantesDomino({ esAdmin = true }) {
   }, [fetchMesas]);
 
   const iniciarSiguienteFase = () => {
+    // Verificar que todos los ganadores estén seleccionados
+    if (!todosLosGanadoresSeleccionados()) {
+      mostrarNotificacion("Debes seleccionar un ganador de cada mesa antes de continuar", "error");
+      return;
+    }
+
     if (isFinalPhase(mesas)) {
       const finalPhase = currentPhase + 1;
       fetchMesas(finalPhase);
@@ -160,7 +172,6 @@ export default function ParticipantesDomino({ esAdmin = true }) {
         puntos: rondas[currentRound] || 0
       };
     });
-    // Se supone que el error es este
     try {
       const res = await fetch("https://dominochampion-v2.onrender.com/api/torneo/final/ronda", {
         method: "POST",
@@ -186,23 +197,40 @@ export default function ParticipantesDomino({ esAdmin = true }) {
             ¡Gracias por participar! Esperamos que hayas disfrutado del torneo de dominó.
           </p>
           <button
-            onClick={() => {
+            onClick={async () => {
+              // Limpia el localStorage del validador CSV
               localStorage.removeItem("csvValidado");
-              window.location.reload();}}
+
+              // Llama al endpoint para limpiar /data
+              try {
+                await fetch("https://dominochampion-v2.onrender.com/api/torneo/limpiar-data", {
+                  method: "POST"
+                });
+              } catch (e) {
+                // Opcional: mostrar mensaje si falla
+                console.error("No se pudo limpiar la carpeta /data", e);
+              }
+              window.location.reload();
+            }}
             className="px-6 py-3 rounded-full bg-green-600 hover:bg-green-700 text-white font-bold shadow-md transition"
           >
             Volver a iniciar el torneo
           </button>
+
         </div>
       </div>
     );
   }
 
+  // Calcular cuántos ganadores faltan por seleccionar
+  const ganadoresSeleccionados = Object.keys(ganadores).length;
+  const totalMesas = mesas.length;
+  const ganadoresFaltantes = totalMesas - ganadoresSeleccionados;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-900 via-blue-900 to-red-900 bg-[length:200%_200%] animate-gradient-move-slow bg-[position:0%_0%] p-6 text-white">
       {notificacion && (
-        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-2xl shadow-lg text-white z-50 ${notificacion.tipo === "success" ? "bg-green-600" : "bg-red-600"}`}>
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-2xl shadow-lg text-white z-50 ${notificacion.tipo === "success" ? "bg-green-600" : notificacion.tipo === "error" ? "bg-red-600" : "bg-yellow-600"}`}>
           {notificacion.mensaje}
         </div>
       )}
@@ -236,10 +264,30 @@ export default function ParticipantesDomino({ esAdmin = true }) {
         <h1 className="text-5xl font-bold text-center mb-8 uppercase">Participantes Dominó</h1>
 
         {esAdmin && !faseFinalActiva && (
-          <div className="flex justify-center mb-6">
+          <div className="flex flex-col items-center mb-6 space-y-4">
+            {/* Indicador de progreso */}
+            {mesas.length > 0 && (
+              <div className="text-center">
+                <p className="text-lg mb-2">
+                  Ganadores seleccionados: {ganadoresSeleccionados} de {totalMesas}
+                </p>
+                {ganadoresFaltantes > 0 && (
+                  <p className="text-yellow-300 text-sm">
+                    Faltan {ganadoresFaltantes} ganador{ganadoresFaltantes !== 1 ? 'es' : ''} por seleccionar
+                  </p>
+                )}
+              </div>
+            )}
+
             <button
               onClick={iniciarSiguienteFase}
-              className={`px-6 py-3 rounded-2xl shadow-lg font-bold uppercase hover:scale-105 transition ${isFinalPhase() ? "bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white" : "bg-gradient-to-r from-red-700 via-red-900 to-black text-white"}`}
+              disabled={!todosLosGanadoresSeleccionados()}
+              className={`px-6 py-3 rounded-2xl shadow-lg font-bold uppercase transition ${todosLosGanadoresSeleccionados()
+                  ? isFinalPhase()
+                    ? "bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white hover:scale-105"
+                    : "bg-gradient-to-r from-red-700 via-red-900 to-black text-white hover:scale-105"
+                  : "bg-gray-600 text-gray-400 cursor-not-allowed opacity-50"
+                }`}
             >
               {isFinalPhase() ? "Iniciar Partida Final" : `Iniciar Fase ${currentPhase + 1}`}
             </button>
@@ -322,14 +370,19 @@ export default function ParticipantesDomino({ esAdmin = true }) {
                 key={mesa.partida}
                 className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-lg border border-white/20"
               >
-                <h2 className="text-3xl font-semibold mb-4 text-center">Mesa {mesa.partida}</h2>
+                <h2 className="text-3xl font-semibold mb-4 text-center">
+                  Mesa {mesa.partida}
+                  {ganadores[mesa.partida] && (
+                    <span className="ml-2 text-green-400 text-lg">✓</span>
+                  )}
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {mesa.jugadores.map((p) => {
                     const isWinner = ganadores[mesa.partida] === p.idParticipante;
                     return (
                       <div
                         key={p.idParticipante}
-                        className={`p-4 rounded-xl border shadow-sm cursor-pointer transition ${isWinner ? "border-green-400 bg-green-800/30" : "border-white/10 bg-black/30"}`}
+                        className={`p-4 rounded-xl border shadow-sm cursor-pointer transition ${isWinner ? "border-green-400 bg-green-800/30" : "border-white/10 bg-black/30 hover:bg-black/40"}`}
                         onClick={() => esAdmin && confirmarYRegistrar(mesa.partida, p)}
                       >
                         <p className="font-semibold text-red-300">
@@ -338,6 +391,11 @@ export default function ParticipantesDomino({ esAdmin = true }) {
                         <p>
                           <span className="font-semibold text-red-400">Nombre:</span> {p.nombre}
                         </p>
+                        {isWinner && (
+                          <div className="mt-2 text-green-400 font-bold text-center">
+                            🏆 GANADOR
+                          </div>
+                        )}
                       </div>
                     );
                   })}

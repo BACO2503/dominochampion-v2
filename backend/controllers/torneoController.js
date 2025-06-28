@@ -174,3 +174,31 @@ exports.cerrarFaseFinal = (req, res) => {
     res.status(500).json({ error: 'No se pudo cerrar la fase final.' });
   }
 };
+
+exports.limpiarData = (req, res) => {
+  const dataDir = path.join(__dirname, '../data');
+  fs.readdir(dataDir, (err, files) => {
+    if (err) {
+      console.error('Error leyendo el directorio /data:', err);
+      return res.status(500).json({ error: 'No se pudo limpiar la carpeta.' });
+    }
+
+    // Filtra todo excepto .gitkeep
+    const archivosAEliminar = files.filter(f => f !== '.gitkeep');
+
+    let errores = [];
+    archivosAEliminar.forEach(archivo => {
+      try {
+        fs.unlinkSync(path.join(dataDir, archivo));
+      } catch (e) {
+        errores.push(archivo);
+      }
+    });
+
+    if (errores.length > 0) {
+      return res.status(500).json({ error: `No se pudieron eliminar: ${errores.join(', ')}` });
+    }
+
+    res.json({ mensaje: 'Carpeta /data limpiada correctamente.' });
+  });
+};

@@ -8,7 +8,8 @@ const {
   consultarAcumuladoFinal,
   registrarPuntosFinal,
   exportarPodioFinalCSV,
-  cerrarFaseFinal
+  cerrarFaseFinal,
+  limpiarData
 } = require('../controllers/torneoController');
 
 const router = express.Router();
@@ -38,5 +39,6 @@ router.get('/final/puntos', consultarAcumuladoFinal);
 router.post('/final/ronda', registrarPuntosFinal);
 router.get('/final/podio-csv', exportarPodioFinalCSV);
 router.post('/final/cerrar', cerrarFaseFinal);
+router.post('/limpiar', limpiarData);
 
 module.exports = router;
