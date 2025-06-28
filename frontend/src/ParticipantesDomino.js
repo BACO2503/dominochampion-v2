@@ -161,7 +161,7 @@ export default function ParticipantesDomino({ esAdmin = true }) {
       };
     });
     try {
-      const res = await fetch("http://localhost:3001/api/torneo/final/ronda", {
+      const res = await fetch("https://dominochampion-v2.onrender.com/api/torneo/final/ronda", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ puntos: puntosActuales, ronda: currentRound })
