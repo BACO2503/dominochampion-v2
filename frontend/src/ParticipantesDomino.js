@@ -207,6 +207,9 @@ export default function ParticipantesDomino({ esAdmin = true }) {
     );
   }
 
+  // Función para saber si se seleccionó un ganador por mesa
+  const todosGanadoresSeleccionados = mesas.length > 0 &&
+    mesas.every((mesa) => ganadores[mesa.partida]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-900 via-blue-900 to-red-900 bg-[length:200%_200%] animate-gradient-move-slow bg-[position:0%_0%] p-6 text-white">
@@ -248,10 +251,17 @@ export default function ParticipantesDomino({ esAdmin = true }) {
           <div className="flex justify-center mb-6">
             <button
               onClick={iniciarSiguienteFase}
+              disabled={!todosGanadoresSeleccionados}
               className={`px-6 py-3 rounded-2xl shadow-lg font-bold uppercase hover:scale-105 transition ${isFinalPhase() ? "bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white" : "bg-gradient-to-r from-red-700 via-red-900 to-black text-white"}`}
             >
               {isFinalPhase() ? "Iniciar Partida Final" : `Iniciar Fase ${currentPhase + 1}`}
             </button>
+            {!todosGanadoresSeleccionados && (
+              <p className="mt-2 text-yellow-300 text-center">
+                Selecciona un ganador en cada mesa antes de continuar.
+              </p>
+            )}
+
           </div>
         )}
 
