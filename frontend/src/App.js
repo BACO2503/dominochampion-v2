@@ -1,12 +1,15 @@
-import React from 'react';
-import ParticipantesDomino from './ParticipantesDomino';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import UploadCSV from "./UploadCSV";
+import ParticipantesDomino from "./ParticipantesDomino";
 
 function App() {
-
   return (
-    <div>
-      <ParticipantesDomino />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<UploadCSV />} />
+        <Route path="/torneo" element={<ParticipantesDomino />} />
+      </Routes>
+    </Router>
   );
 }
 

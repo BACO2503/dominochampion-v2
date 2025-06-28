@@ -4,7 +4,15 @@ const path = require('path');
 const csv = require('csv-parser');
 
 const obtenerParticipantes = async (req, res) => {
-  const filePath = path.join(__dirname, '../data/participantes.csv');
+  const fase = parseInt(req.query.fase || "1");
+  let filePath;
+
+  if (fase === 1) {
+    filePath = path.join(__dirname, '../data/participantes.csv');
+  } else {
+    filePath = path.join(__dirname, `../data/ganadores_fase${fase - 1}.csv`);
+  }
+
   const participantes = [];
 
   try {

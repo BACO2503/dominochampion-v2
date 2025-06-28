@@ -10,6 +10,9 @@ app.use(express.json());
 const torneoRoutes = require('./routes/torneoRoutes');
 app.use('/api/torneo', torneoRoutes);
 
+const participantesRoutes = require('./routes/participantesRoutes');
+app.use('/api/participantes', participantesRoutes);
+
 // Puerto
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

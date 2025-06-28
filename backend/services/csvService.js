@@ -124,6 +124,12 @@ function generarPodioFinalCSV() {
   return podio; // Por si quieres devolver el top 3 en el endpoint
 }
 
+function reiniciarFinalJSON() {
+  const archivo = path.join(__dirname, '../data/final.json');
+  const dataVacia = { rondas: [] };
+  fs.writeFileSync(archivo, JSON.stringify(dataVacia, null, 2), 'utf-8');
+}
+
 
 module.exports = 
 { leerPartidasDeJSON, 
@@ -131,4 +137,5 @@ module.exports =
   guardarGanadorEnCSV,
   obtenerAcumuladoFinal,
   guardarRondaFinal,
-  generarPodioFinalCSV };
+  generarPodioFinalCSV,
+  reiniciarFinalJSON};
